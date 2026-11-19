@@ -1,24 +1,30 @@
 # JGB Audience Lab
 
-Una sola aplicación de planeación de audiencias y medios para **Tarrito Rojo**, **Pads Faciales JGB** y **Cuidaderm**. Cada marca tiene una identidad visual propia y cuatro secciones: Resumen, Audiencias, Medios y Simulador. La vista general permite repartir una misma inversión entre las tres marcas.
+Una sola aplicación con **tres espacios independientes**: Tarrito Rojo, Pads Faciales y Cuidaderm. Cada marca tiene Resumen, Audiencias, Medios y Simulador, con identidad visual y escenarios propios.
 
 ![JGB Audience Lab](docs/preview.jpg)
 
-## Funcionalidades
+## Presupuesto definido por el usuario
 
-- Doce perfiles estratégicos con momentos de consumo, afinidades, palabras clave, mensajes, ideas creativas, activación, exclusiones y KPI.
+Cada presupuesto inicia **vacío**. El usuario escribe el monto completo en COP; por ejemplo, `27350000` o `27.350.000`. No hay inversión precargada, botones de montos sugeridos ni reparto de inversión entre marcas. Los resultados permanecen pendientes hasta ingresar un monto válido. Un cero explícito produce resultados en cero.
+
+Cambiar el presupuesto, los días, el universo, el objetivo, la mezcla o los costos de una marca no altera otra. El esquema anterior de presupuestos automáticos no se restaura. Los escenarios se guardan y comparan dentro de su propia marca, hasta seis por marca.
+
+## Contenido y funciones
+
+- Cuatro perfiles por marca, con afinidades, momentos, palabras clave, mensajes, ideas creativas, activación, exclusiones y KPI.
 - Cinco medios: Meta, TikTok, YouTube, Google Search y Display.
-- Inversión libre en COP, duración, universos editables y objetivos de alcance, tráfico o mix balanceado.
-- Parámetros por medio: CPM o CPC, CTR, llegada a sesión y repetición base.
+- Presupuesto libre en COP, duración, universo editable y objetivos de alcance, tráfico o mezcla balanceada.
+- Mezcla de medios ajustable al 100%; solo distribuye la inversión de la marca activa.
+- CPM o CPC, CTR, llegada a sesión y repetición editables por canal.
 - Escenarios de eficiencia prudente, base y optimista.
-- Alcance con saturación, cobertura, frecuencia, impresiones, clics, sesiones y costos derivados.
-- Reparto por marcas y medios con ajuste automático al 100%.
-- Comparación de hasta seis escenarios guardados en el navegador, exportación CSV con supuestos e impresión.
-- Navegación adaptable, teclado, búsqueda de audiencias y fuentes oficiales de producto.
+- Cobertura, alcance con saturación, impresiones, clics, sesiones, frecuencia y costos derivados.
+- Curva acumulada, tabla de resultados, comparación, CSV e impresión.
+- Navegación por teclado, filtros de audiencias y adaptación a escritorio y móvil.
 
-## Desarrollo y validación
+## Desarrollo
 
-Aplicación estática en HTML, CSS y módulos JavaScript. No necesita dependencias de producción ni servicios externos para funcionar; las imágenes y fuentes se sirven localmente.
+HTML, CSS y módulos JavaScript sin dependencias de producción. Recursos de producto y fuentes locales.
 
 ```bash
 npm run dev
@@ -26,28 +32,26 @@ npm test
 npm run build
 ```
 
-El servidor de desarrollo acepta `--host` y `--port`. Vercel ejecuta la verificación estática y publica `public/` con la configuración de `vercel.json`.
+Vercel ejecuta la verificación estática y publica `public/`. El servidor de desarrollo acepta `--host` y `--port`.
 
-Las pruebas verifican las ecuaciones de compra, presupuesto cero, monotonicidad, saturación, deduplicación modelada, ponderación de tasas, redistribución y persistencia de supuestos de los escenarios. La revisión de interfaz cubre navegación, búsqueda, modales, edición de inversión, comparación tras recarga, CSV y anchos móviles de 320 y 390 px.
+Las pruebas verifican presupuestos vacíos, lectura de montos en COP, independencia entre marcas, ecuaciones, presupuesto cero, saturación, tasas ponderadas, redistribución y snapshots. La revisión de navegador cubre edición y recarga, escenarios por marca, exportación, búsqueda, modales y pantallas de 320 y 390 px.
 
-## Modelo de planeación
+## Modelo
 
-**Los valores iniciales son ilustrativos, no resultados medidos ni benchmarks certificados.** No hay conexión a cuentas publicitarias, CRM o GA4.
+**Universos, costos y tasas iniciales son hipótesis editables; no son resultados medidos ni benchmarks certificados.** La app no conecta cuentas de anuncios o GA4.
 
-Para medios comprados por CPM:
+- CPM: `impresiones = inversión / CPM × 1.000`.
+- `clics = impresiones × CTR / 100`.
+- Search: `clics = inversión / CPC`; `impresiones = clics / (CTR / 100)`.
+- `sesiones = clics × llegada a sesión / 100`.
+- `contactos efectivos = suma(impresiones / repetición base de cada medio)`.
+- `alcance = U × (1 − exp(−contactos efectivos / U))`.
+- `cobertura = alcance / U × 100`.
 
-`impresiones = inversión / CPM × 1.000`
+El alcance aproxima la saturación dentro del universo de cada marca, bajo un supuesto homogéneo de exposición; no es una deduplicación medida. Los universos iniciales de Tarrito Rojo (8 M), Pads (4 M) y Cuidaderm (5 M) son hipótesis editables por separado. No se agregan universos ni alcances entre marcas.
 
-`clics = impresiones × CTR / 100`
+Prudente: costos × 1,20, CTR × 0,80 y llegada × 0,90. Optimista: costos × 0,85, CTR × 1,15 y llegada × 1,05. Tasas limitadas al 100%; no son intervalos estadísticos. La duración cambia el ritmo diario, no el total para una misma inversión.
 
-Search usa `clics = inversión / CPC`, e infiere impresiones a partir del CTR. En todos los casos: `sesiones = clics × llegada a sesión / 100`.
+## Persistencia y fuentes
 
-El alcance de marca usa `U × (1 − exp(−contactos efectivos / U))`, donde los contactos efectivos suman las impresiones de cada medio divididas por su factor de repetición. El alcance conjunto aplica `U total × (1 − producto(1 − alcance marca / U total))`, bajo un supuesto de independencia dentro del universo compartido. Esta aproximación no representa una deduplicación real.
-
-Los universos iniciales (12 M para el portafolio; 8 M, 4 M y 5 M por marca) son hipótesis editables. Las bases de marca se limitan a la base común en el portafolio. Sus escenarios individuales mantienen presupuestos y mix independientes.
-
-Prudente: costos × 1,20, CTR × 0,80 y llegada a sesión × 0,90. Optimista: costos × 0,85, CTR × 1,15 y llegada × 1,05. Las tasas finales se limitan a 100%. No son intervalos estadísticos. La duración cambia el ritmo diario, no el total para una misma inversión.
-
-## Datos y privacidad
-
-Los escenarios se guardan en `localStorage` con esquema versionado. No se transmiten a plataformas publicitarias ni activan campañas. El CSV conserva parámetros para compartir o reproducir el cálculo. Las fuentes de producto y la metodología están disponibles dentro de la app. Créditos de recursos en `public/assets/SOURCES.md`.
+Configuraciones y escenarios se conservan en `localStorage`, bajo `jgb-audience-lab-v2`. No se activan campañas ni se transmite inversión a plataformas. El CSV incluye los parámetros y resultados de la marca activa. La metodología y los sitios oficiales están disponibles en la app. Créditos en `public/assets/SOURCES.md`.
