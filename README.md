@@ -2,6 +2,8 @@
 
 Una sola aplicación con **tres espacios independientes**: Tarrito Rojo, Pads Faciales y Cuidaderm. Cada marca tiene Resumen, Audiencias, Medios y Simulador, con identidad visual y escenarios propios.
 
+La interfaz usa una estética clara inspirada en iOS: superficies de cristal translúcido, navegación flotante, tarjetas con profundidad y un dock inferior en móvil. Incluye alternativas para movimiento reducido, mayor contraste y navegadores sin desenfoque.
+
 ![JGB Audience Lab](docs/preview.jpg)
 
 ## Presupuesto definido por el usuario
